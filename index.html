@@ -1,0 +1,97 @@
+<html>
+    <head>
+        <script src="jquery-3.1.0.min.js"></script>
+        <script>
+            
+            var beatTime;
+            
+            function calculate() {
+                var bpms = parseFloat($("#bpmInput").val());
+                //console.log("bpms => "+bpms);
+                var bps = bpms/60;
+                //console.log("bps => "+bps);
+                beatTime = 1000/(4*bps);
+                //console.log("beatTime => "+beatTime);
+            }
+
+            var t1 = new Audio("/99_Drum_Samples/Samples/kick-big2.wav");
+            var t2 = new Audio("/99_Drum_Samples/Samples/hihat-digital.wav");
+            var t3 = new Audio("/99_Drum_Samples/Samples/snare-pinch.wav");
+            var t4 = new Audio("/99_Drum_Samples/Samples/hihat-digital.wav");
+            
+            var startTime;
+            var prevTime;
+            var counter = 0;
+            
+            var timer;
+            function initBeat() {
+                startTime = (new Date()).getTime();
+                prevTime = startTime;
+                counter = 0;
+                //console.log("start beat time => "+beatTime)
+                timer = setInterval(play, beatTime);
+            }
+            
+            function stopBeat() {
+                clearTimeout(timer);
+                timer = null;
+            }
+            
+            var insideCounter = 0;
+            var play = function() {
+                //counter++;
+                insideCounter++;
+                //var currentTime = (new Date()).getTime();
+                //console.log("counter =>"+counter+", diff => "+(currentTime-prevTime));
+                //console.log("insideCounter => "+insideCounter);
+                if ( insideCounter == 1 ) {
+                    t1.play();
+                } else if ( insideCounter == 2 ) {
+                    t2.play();
+                } else if ( insideCounter == 3 ) {
+                    t3.play();
+                } else if ( insideCounter == 4 ) {
+                    t4.play();
+                    insideCounter = 0;
+                }
+                //var media = (currentTime-startTime)/counter;
+                //prevTime = currentTime;
+                //console.log("media => "+media);
+            }
+            
+            function change() {
+                calculate();
+                clearTimeout(timer);
+                initBeat();
+            }
+            
+            function increase() {
+                $("#bpmInput").val(parseFloat($("#bpmInput").val())+1);
+                calculate();
+                clearTimeout(timer);
+                initBeat();
+            }
+            
+            function decrease() {
+                $("#bpmInput").val(parseFloat($("#bpmInput").val())-1);
+                calculate();
+                clearTimeout(timer);
+                initBeat();
+            }
+            
+            $(document).ready(function () {
+                calculate();
+            });
+            
+        </script>
+    </head>
+    <body>
+        <button type="button" onclick="initBeat()">Start</button>
+        <button type="button" onclick="stopBeat()">Pause/Stop</button>
+        |
+        <button type="button" onclick="increase()">+</button>
+        <input id="bpmInput" type="text" onchange="change()" value="60" />
+        <button type="button" onclick="decrease()">-</button>
+        bpm
+    </body>
+</html>
