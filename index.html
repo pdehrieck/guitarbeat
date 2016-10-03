@@ -1,23 +1,27 @@
 <html>
     <head>
-        <script src="jquery-3.1.0.min.js"></script>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+        <link rel="stylesheet" href="bootstrap/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="bootstrap-combobox.css">
+        <link rel="stylesheet" href="jquery-ui/jquery-ui.min.css">
+        <script type="application/javascript" src="jquery-3.1.0.min.js"></script>
+        <script type="application/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+        <script type="application/javascript" src="bootstrap-combobox.js"></script>
+        <script type="application/javascript" src="jquery-ui/jquery-ui.min.js"></script>
         <script>
             
             var beatTime;
             
             function calculate() {
                 var bpms = parseFloat($("#bpmInput").val());
-                //console.log("bpms => "+bpms);
                 var bps = bpms/60;
-                //console.log("bps => "+bps);
-                beatTime = 1000/(4*bps);
-                //console.log("beatTime => "+beatTime);
+                beatTime = 1000/(32*bps);
             }
 
-            var t1 = new Audio("99_Drum_Samples/Samples/kick-big2.wav");
-            var t2 = new Audio("99_Drum_Samples/Samples/hihat-digital.wav");
-            var t3 = new Audio("99_Drum_Samples/Samples/snare-pinch.wav");
-            var t4 = new Audio("99_Drum_Samples/Samples/hihat-digital.wav");
+            var tt1 = "99_Drum_Samples/Samples/kick-big.wav";
+            var tt2 = "99_Drum_Samples/Samples/hihat-digital.wav";
+            var tt3 = "99_Drum_Samples/Samples/snare-pinch.wav";
             
             var startTime;
             var prevTime;
@@ -28,7 +32,6 @@
                 startTime = (new Date()).getTime();
                 prevTime = startTime;
                 counter = 0;
-                //console.log("start beat time => "+beatTime)
                 timer = setInterval(play, beatTime);
             }
             
@@ -38,25 +41,33 @@
             }
             
             var insideCounter = 0;
+            var compassoCounter = 0;
             var play = function() {
-                //counter++;
-                insideCounter++;
-                //var currentTime = (new Date()).getTime();
-                //console.log("counter =>"+counter+", diff => "+(currentTime-prevTime));
-                //console.log("insideCounter => "+insideCounter);
-                if ( insideCounter == 1 ) {
-                    t1.play();
-                } else if ( insideCounter == 2 ) {
-                    t2.play();
-                } else if ( insideCounter == 3 ) {
-                    t3.play();
-                } else if ( insideCounter == 4 ) {
-                    t4.play();
-                    insideCounter = 0;
-                }
-                //var media = (currentTime-startTime)/counter;
-                //prevTime = currentTime;
-                //console.log("media => "+media);
+                //for (var i = 0; i < partitura.drums.length; i++) {
+                    //console.log("partitura.drums.length => "+partitura.drums.length);
+                    if ( typeof partitura.drums[compassoCounter][insideCounter] != "undefined" && partitura.drums[0][insideCounter] != null ) {
+                        for (var j = 0; j < partitura.drums[compassoCounter][insideCounter].notes.length; j++) {
+                            if ( partitura.drums[compassoCounter][insideCounter].notes[j] == 4 ) {
+                                var t1 = new Audio(tt1);
+                                t1.play();
+                            } else if ( partitura.drums[compassoCounter][insideCounter].notes[j] == 12 ) {
+                                var t2 = new Audio(tt2);
+                                t2.play()
+                            } else if ( partitura.drums[compassoCounter][insideCounter].notes[j] == 8 ) {
+                                var t3 = new Audio(tt3);
+                                t3.play();
+                            }
+                        }
+                    }
+                    insideCounter++;
+                    if ( insideCounter == 32 ) {
+                        insideCounter = 0;
+                        compassoCounter++;
+                    }
+                    if ( compassoCounter == partitura.drums.length ) {
+                        compassoCounter = 0;
+                    }
+                //}
             }
             
             function change() {
@@ -79,19 +90,877 @@
                 initBeat();
             }
             
+            function drawSemibreve(ctx, posX, posY) {
+                
+                ctx.beginPath();
+                ctx.ellipse(posX, posY, 6, 10, 90 * Math.PI/180, 0, 2 * Math.PI);
+                ctx.fillStyle = "black";
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.ellipse(posX, posY, 3, 5, 135 * Math.PI/180, 0, 2 * Math.PI);
+                ctx.fillStyle = "white";
+                ctx.fill();
+                
+            }
+            
+            function minimaCircle(ctx, posX, posY) {
+                
+                seminimaCircle(ctx, posX, posY);
+                
+                ctx.beginPath();
+                ctx.ellipse(posX, posY, 3, 8, 45 * Math.PI/180, 0, 2 * Math.PI);
+                ctx.fillStyle = "white";
+                ctx.fill();
+                
+            }
+            
+            function drawMinimaUp(ctx, posX, posY) {
+                
+                minimaCircle(ctx, posX, posY);
+                
+                ctx.beginPath();
+                ctx.moveTo(posX-7,posY);
+                ctx.lineWidth=2;
+                ctx.lineTo(posX-7,posY+40);
+                ctx.stroke();
+                
+            }
+            
+            function drawMinimaDown(ctx, posX, posY) {
+                
+                minimaCircle(ctx, posX, posY);
+                
+                ctx.moveTo(posX+7,posY);
+                ctx.lineWidth=2;
+                ctx.lineTo(posX+7,posY-40);
+                ctx.stroke();
+                
+            }
+            
+            function seminimaCircle(ctx, posX, posY) {
+                
+                ctx.beginPath();
+                ctx.ellipse(posX, posY, 5, 8, 45 * Math.PI/180, 0, 2 * Math.PI);
+                ctx.fillStyle = "black";
+                ctx.fill();
+                
+            }
+            
+            function drawSeminimaUp(ctx, posX, posY) {
+                
+                seminimaCircle(ctx, posX, posY);
+                
+                ctx.beginPath();
+                ctx.moveTo(posX-7,posY);
+                ctx.lineWidth=2;
+                ctx.lineTo(posX-7,posY+40);
+                ctx.stroke();
+                
+            }
+            
+            function drawSeminimaDown(ctx, posX, posY) {
+                
+                seminimaCircle(ctx, posX, posY);
+                
+                ctx.moveTo(posX+7,posY);
+                ctx.lineWidth=2;
+                ctx.lineTo(posX+7,posY-40);
+                ctx.stroke();
+                
+            }
+            
+            function drawColcheiaUp(ctx, posX, posY) {
+                
+                drawSeminimaUp(ctx, posX, posY);
+                
+                var px0 = posX-7;
+                var py0 = posY+40;
+                ctx.beginPath();
+                ctx.moveTo(px0, py0);
+                ctx.bezierCurveTo(px0-4,py0-8,px0-14,py0-12,px0-6,py0-24);
+                ctx.bezierCurveTo(px0-14,py0-16,px0-2,py0-12,px0,py0-6);
+                ctx.lineTo(px0,py0);
+                ctx.fillStyle = "black";
+                ctx.fill();
+                
+            }
+            
+            function drawColcheiaDown(ctx, posX, posY) {
+                
+                drawSeminimaDown(ctx, posX, posY);
+                
+                var px0 = posX+7;
+                var py0 = posY-40;
+                ctx.beginPath();
+                ctx.moveTo(px0, py0);
+                ctx.bezierCurveTo(px0+4,py0+8,px0+14,py0+12,px0+6,py0+24);
+                ctx.bezierCurveTo(px0+14,py0+16,px0+2,py0+12,px0,py0+6);
+                ctx.lineTo(px0,py0);
+                ctx.fillStyle = "black";
+                ctx.fill();           
+                
+            }
+            
+            function drawSemicolcheiaUp(ctx, posX, posY) {
+                
+                drawColcheiaUp(ctx, posX, posY);
+                
+                var px0 = posX-7;
+                var py0 = posY+30;
+                ctx.beginPath();
+                ctx.moveTo(px0, py0);
+                ctx.bezierCurveTo(px0-4,py0-8,px0-14,py0-12,px0-6,py0-24);
+                ctx.bezierCurveTo(px0-14,py0-16,px0-2,py0-12,px0,py0-6);
+                ctx.lineTo(px0,py0);
+                ctx.fillStyle = "black";
+                ctx.fill();
+                
+            }
+            
+            function drawSemicolcheiaDown(ctx, posX, posY) {
+                
+                drawColcheiaDown(ctx, posX, posY);
+                
+                var px0 = posX+7;
+                var py0 = posY-30;
+                ctx.beginPath();
+                ctx.moveTo(px0, py0);
+                ctx.bezierCurveTo(px0+4,py0+8,px0+14,py0+12,px0+6,py0+24);
+                ctx.bezierCurveTo(px0+14,py0+16,px0+2,py0+12,px0,py0+6);
+                ctx.lineTo(px0,py0);
+                ctx.fillStyle = "black";
+                ctx.fill();
+                
+            }
+            
+            function drawFusaUp(ctx, posX, posY) {
+                
+                drawSemicolcheiaUp(ctx, posX, posY);
+                
+                var px0 = posX-7;
+                var py0 = posY+20;
+                ctx.beginPath();
+                ctx.moveTo(px0, py0);
+                ctx.bezierCurveTo(px0-4,py0-8,px0-14,py0-12,px0-6,py0-24);
+                ctx.bezierCurveTo(px0-14,py0-16,px0-2,py0-12,px0,py0-6);
+                ctx.lineTo(px0,py0);
+                ctx.fillStyle = "black";
+                ctx.fill();
+                
+            }
+            
+            function drawFusaDown(ctx, posX, posY) {
+                
+                drawSemicolcheiaDown(ctx, posX, posY)
+                
+                var px0 = posX+7;
+                var py0 = posY-20;
+                ctx.beginPath();
+                ctx.moveTo(px0, py0);
+                ctx.bezierCurveTo(px0+4,py0+8,px0+14,py0+12,px0+6,py0+24);
+                ctx.bezierCurveTo(px0+14,py0+16,px0+2,py0+12,px0,py0+6);
+                ctx.lineTo(px0,py0);
+                ctx.fillStyle = "black";
+                ctx.fill();
+                
+            }
+            
+            function closedHihatCircle(ctx, posX, posY) {
+                
+                ctx.beginPath();
+                ctx.ellipse(posX, posY, 5, 8, 45 * Math.PI/180, 0, 2 * Math.PI);
+                ctx.fillStyle = "black";
+                ctx.fill();
+                
+                ctx.strokeStyle = '#ffffff';
+                
+                ctx.beginPath();
+                ctx.moveTo(posX-4,posY-2);
+                ctx.lineWidth=2;
+                ctx.lineTo(posX+4,posY+2);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(posX-5,posY+6);
+                ctx.lineWidth=2;
+                ctx.lineTo(posX+5,posY-6);
+                ctx.stroke();
+                
+                ctx.strokeStyle = '#000000';
+                
+            }
+            
+            function drawClosedHihatSeminimaUp(ctx, posX, posY) {
+
+                closedHihatCircle(ctx, posX, posY);
+                
+                ctx.beginPath();
+                ctx.moveTo(posX-7,posY);
+                ctx.lineWidth=2;
+                ctx.lineTo(posX-7,posY+40);
+                ctx.stroke();
+ 
+            }
+            
+            function drawClosedHihatSeminimaDown(ctx, posX, posY) {
+
+                closedHihatCircle(ctx, posX, posY);
+                
+                ctx.beginPath();
+                ctx.moveTo(posX+7,posY);
+                ctx.lineWidth=2;
+                ctx.lineTo(posX+7,posY-40);
+                ctx.stroke();
+ 
+            }
+            
+            var array2Draw = null;
+            var p0Y = 100;
+            function drawBaseCanvas() {
+            
+                var c = document.getElementById("composer");
+                var ctx = c.getContext("2d");
+                
+                //console.log("array2Draw => ");
+                //console.log(array2Draw);
+
+                if ( array2Draw == null || typeof array2Draw == "undefined" || array2Draw.length == 0 ) {
+                
+                    var larguraCompasso = 500;
+                
+                    ctx.lineWidth=1;
+                
+                    ctx.moveTo(0,p0Y+40);
+                    ctx.lineTo(0,p0Y+120);
+                    ctx.stroke();
+                    
+                    ctx.moveTo(0,p0Y+40);
+                    ctx.lineTo(larguraCompasso,p0Y+40);
+                    ctx.stroke();
+                    
+                    ctx.moveTo(0,p0Y+60);
+                    ctx.lineTo(larguraCompasso,p0Y+60);
+                    ctx.stroke();
+                    
+                    ctx.moveTo(0,p0Y+80);
+                    ctx.lineTo(larguraCompasso,p0Y+80);
+                    ctx.stroke();
+                    
+                    ctx.moveTo(0,p0Y+100);
+                    ctx.lineTo(larguraCompasso,p0Y+100);
+                    ctx.stroke();
+                    
+                    ctx.moveTo(0,p0Y+120);
+                    ctx.lineTo(larguraCompasso,p0Y+120);
+                    ctx.stroke();
+                    
+                    ctx.moveTo(larguraCompasso,p0Y+40);
+                    ctx.lineTo(larguraCompasso,p0Y+120);
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(10,p0Y+55);
+                    ctx.lineWidth=4;
+                    ctx.lineTo(10,p0Y+105);
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(20,p0Y+55);
+                    ctx.lineWidth=4;
+                    ctx.lineTo(20,p0Y+105);
+                    ctx.stroke();
+                    
+                    ctx.font="900 50px Times";
+                    ctx.fillText("4",30,p0Y+75);
+                    ctx.fillText("4",30,p0Y+115);
+                
+                } else {
+                
+                    var largAnterior = 0;
+                    for (var i = 0; i < array2Draw.length; i++) {
+
+                        if ( i == 0) {
+                            
+                            var larguraCompasso = 100 + array2Draw[i][0]*50;
+
+                            ctx.lineWidth=1;
+
+                            ctx.moveTo(0,p0Y+40);
+                            ctx.lineTo(0,p0Y+120);
+                            ctx.stroke();
+                            
+                            ctx.moveTo(0,p0Y+40);
+                            ctx.lineTo(larguraCompasso,p0Y+40);
+                            ctx.stroke();
+                            
+                            ctx.moveTo(0,p0Y+60);
+                            ctx.lineTo(larguraCompasso,p0Y+60);
+                            ctx.stroke();
+                            
+                            ctx.moveTo(0,p0Y+80);
+                            ctx.lineTo(larguraCompasso,p0Y+80);
+                            ctx.stroke();
+                            
+                            ctx.moveTo(0,p0Y+100);
+                            ctx.lineTo(larguraCompasso,p0Y+100);
+                            ctx.stroke();
+                            
+                            ctx.moveTo(0,p0Y+120);
+                            ctx.lineTo(larguraCompasso,p0Y+120);
+                            ctx.stroke();
+                            
+                            ctx.moveTo(larguraCompasso,p0Y+40);
+                            ctx.lineTo(larguraCompasso,p0Y+120);
+                            ctx.stroke();
+                            
+                            ctx.beginPath();
+                            ctx.moveTo(10,p0Y+55);
+                            ctx.lineWidth=4;
+                            ctx.lineTo(10,p0Y+105);
+                            ctx.stroke();
+                            
+                            ctx.beginPath();
+                            ctx.moveTo(20,p0Y+55);
+                            ctx.lineWidth=4;
+                            ctx.lineTo(20,p0Y+105);
+                            ctx.stroke();
+                            
+                            ctx.font="900 50px Times";
+                            ctx.fillText("4",30,p0Y+75);
+                            ctx.fillText("4",30,p0Y+115);
+                            
+                            largAnterior = larguraCompasso;
+                            
+                        } else {
+                        
+                            var larguraCompasso = (array2Draw[i][0]*50)+50;
+
+                            ctx.lineWidth=1;
+
+                            ctx.moveTo(largAnterior,p0Y+40);
+                            ctx.lineTo(largAnterior,p0Y+120);
+                            ctx.stroke();
+                            
+                            ctx.moveTo(largAnterior,p0Y+40);
+                            ctx.lineTo(larguraCompasso+largAnterior,p0Y+40);
+                            ctx.stroke();
+                            
+                            ctx.moveTo(largAnterior,p0Y+60);
+                            ctx.lineTo(larguraCompasso+largAnterior,p0Y+60);
+                            ctx.stroke();
+                            
+                            ctx.moveTo(largAnterior,p0Y+80);
+                            ctx.lineTo(larguraCompasso+largAnterior,p0Y+80);
+                            ctx.stroke();
+                            
+                            ctx.moveTo(largAnterior,p0Y+100);
+                            ctx.lineTo(larguraCompasso+largAnterior,p0Y+100);
+                            ctx.stroke();
+                            
+                            ctx.moveTo(largAnterior,p0Y+120);
+                            ctx.lineTo(larguraCompasso+largAnterior,p0Y+120);
+                            ctx.stroke();
+                            
+                            ctx.moveTo(larguraCompasso+largAnterior,p0Y+40);
+                            ctx.lineTo(larguraCompasso+largAnterior,p0Y+120);
+                            ctx.stroke();
+                            
+                            largAnterior = largAnterior+larguraCompasso;
+                        
+                        }
+                        
+                    }
+                    
+                    var larguraCompasso = 200;
+
+                    ctx.lineWidth=1;
+
+                    ctx.moveTo(largAnterior,p0Y+40);
+                    ctx.lineTo(largAnterior,p0Y+120);
+                    ctx.stroke();
+                            
+                    ctx.moveTo(largAnterior,p0Y+40);
+                    ctx.lineTo(larguraCompasso+largAnterior,p0Y+40);
+                    ctx.stroke();
+                            
+                    ctx.moveTo(largAnterior,p0Y+60);
+                    ctx.lineTo(larguraCompasso+largAnterior,p0Y+60);
+                    ctx.stroke();
+                            
+                    ctx.moveTo(largAnterior,p0Y+80);
+                    ctx.lineTo(larguraCompasso+largAnterior,p0Y+80);
+                    ctx.stroke();
+                            
+                    ctx.moveTo(largAnterior,p0Y+100);
+                    ctx.lineTo(larguraCompasso+largAnterior,p0Y+100);
+                    ctx.stroke();
+                            
+                    ctx.moveTo(largAnterior,p0Y+120);
+                    ctx.lineTo(larguraCompasso+largAnterior,p0Y+120);
+                    ctx.stroke();
+                            
+                    ctx.moveTo(larguraCompasso+largAnterior,p0Y+40);
+                    ctx.lineTo(larguraCompasso+largAnterior,p0Y+120);
+                    ctx.stroke();
+                
+                }
+
+                return ctx;
+                
+            }
+
+            var notesMap = [];
+            function drawPartitura(ctx, partitura) {
+                var posXAnt = 0;
+                if ( typeof partitura.drums != "undefined" ) {
+                    var drums = partitura.drums;
+                    for (var i = 0; i < drums.length; i++) {
+                        if ( typeof drums[i] != "undefined" ) {
+                            var compassoDrums = drums[i];
+                            for (var j = 0; j < compassoDrums.length; j++) {
+                                if ( compassoDrums[j] != null ) {
+                                    var posX;
+                                    if ( i == 0 && j == 0 ) {
+                                        posX = 100;
+                                    } else if ( j == 0 ) {
+                                        posX = posXAnt+100;
+                                    } else {
+                                        posX = posXAnt+50;
+                                    }
+                                    for (var k = 0; k < compassoDrums[j].notes.length; k++) {
+                                        var posY = 20+(13-compassoDrums[j].notes[k])*10;
+                                        if ( compassoDrums[j].type == "seminima" ) {
+                                            drawSeminimaUp(ctx, posX, p0Y+posY);
+                                        } if ( compassoDrums[j].type == "colcheia" ) {
+                                            drawColcheiaUp(ctx, posX, p0Y+posY);
+                                        } else if ( compassoDrums[j].type == "hihat-closed-seminima" ) {
+                                            drawClosedHihatSeminimaUp(ctx, posX, p0Y+posY);
+                                        }
+                                    }
+                                    posXAnt = posX;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            function preProcessPartitura(partitura) {
+                var iCompasso;
+                var iNumb;
+                var returnArray = [];
+                // Instrumentos
+                //for (var i = 0; i < partitura.length; i++) {
+                    for (var j = 0; j < partitura.drums.length; j++) {
+                        var compasso = partitura.drums[j];
+                        var compassoDuration = 0;
+                        var numberOfNotes = 0;
+                        for (var k = 0; k < compasso.length; k++) {
+                            if ( compasso[k] != null && typeof compasso[k] != "undefined" ) {
+                                numberOfNotes++;
+                                if ( compasso[k].type == "semibreve" ) {
+                                    compassoDuration = compassoDuration+32;
+                                } else if ( compasso[k].type == "minima" ) {
+                                    compassoDuration = compassoDuration+16;
+                                } else if ( compasso[k].type == "seminima" ) {
+                                    compassoDuration = compassoDuration+8;
+                                } else if ( compasso[k].type == "colcheia" ) {
+                                    compassoDuration = compassoDuration+4;
+                                } else if ( compasso[k].type == "semicolcheia" ) {
+                                    compassoDuration = compassoDuration+2;
+                                } else if ( compasso[k].type == "fusa" ) {
+                                    compassoDuration = compassoDuration+1;
+                                } else if ( compasso[k].type == "hihat-closed-seminima" ) {
+                                     compassoDuration = compassoDuration+8;
+                                }
+                            }
+                        }
+                        returnArray[j] = [numberOfNotes, compassoDuration];
+                        
+                    }
+                //}
+                return returnArray;
+            }
+
+            var partitura;
+            var canvas;
             $(document).ready(function () {
+                
+                var beatsList = [];
+                beatsList.push({"name": "Pop Básico 1", "value": "base-pop1", "jsonFile": "rithms/base-pop1.json"});
+                beatsList.push({"name": "Pop Básico 2", "value": "base-pop2", "jsonFile": "rithms/base-pop2.json"});
+                
+                canvas = document.getElementById('composer');
+                
                 calculate();
+                array2Draw = null;
+                ctx = drawBaseCanvas();
+                
+                $("#predefinedRithmComboboxDiv").html("<select id='predefinedRithmComboboxSelect' class='form-control combobox' style='width: 100%;'><option></option></select>");
+                for (var i = 0; i < beatsList.length; i++) {
+                     $("#predefinedRithmComboboxDiv select").append("<option value='"+beatsList[i].value+"'>"+beatsList[i].name+"</option>");
+                }
+                $("#predefinedRithmComboboxSelect").combobox();
+                
+                $("#predefinedRithmComboboxDiv .combobox-container input").change(function () {
+                    var timeInit = (new Date()).getTime();
+                    var value = $(this).val();
+                    if ( value != "" ) {
+                        for (var i = 0; i < beatsList.length; i++) {
+                            if ( beatsList[i].value == value ) {
+                                try {
+                                    $.getJSON(beatsList[i].jsonFile, function(json) {
+                                        partitura = json;
+                                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                                        array2Draw = preProcessPartitura(partitura);
+                                        ctx = drawBaseCanvas();
+                                        drawPartitura(ctx, partitura);
+                                        $("#showJSON").html(JSON.stringify(partitura));
+                                        var timeEnd = (new Date()).getTime();
+                                        console.log("Time to render => "+(timeEnd-timeInit)+"ms");
+                                    });
+                                } catch (Err) {}
+                                break;
+                            }
+                        }
+                    } else {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx = drawBaseCanvas();
+                    }
+
+                });
+                
+                var composerPosition = $("#composer").offset();
+                $("#noteButtonsConainer").css("top", composerPosition.top+"px");
+                $("#noteButtonsConainer").css("left", composerPosition.left+"px");
+                
+                $(".note2Drag").draggable({
+                    helper: 'clone',
+                    start: function(event, ui) {
+
+                        if ( array2Draw == null || typeof array2Draw == "undefined" || array2Draw.length == 0 ) {
+
+                            var posCanvas = $("#composer").offset();
+                            var top = p0Y+20+posCanvas.top;
+                            
+                            $("body").append(
+                                "<div id='dropContainer_new' class='dropConainer dropContainerValid' style='position: absolute; width: 441px; height: 120px; top: "+top+"px; left: 90px; background-color:rgba(153, 255, 102, 0.5); border-style: dashed; border-radius: 10px; border-color: #226600;'></div>");
+                        
+                        } else {
+
+                            var largAnterior = 0;
+                            for (var i = 0; i < array2Draw.length; i++) {
+
+                                if ( i == 0) {
+
+                                    var larguraCompasso = 100 + array2Draw[i][0]*50;
+
+                                    var posCanvas = $("#composer").offset();
+                                    var top = p0Y+20+posCanvas.top;
+                                    
+                                    console.log("console.log(array2Draw[i][1]) => "+array2Draw[i][1]);
+                                    if ( array2Draw[i][1] < 32 ) {
+                                        $("body").append(
+                                            "<div id='dropContainer_"+i+"' class='dropConainer dropContainerValid' style='position: absolute; width: "+(larguraCompasso+1-60)+"px; height: 120px; top: "+top+"px; left: 90px; background-color:rgba(153, 255, 102, 0.5); border-style: dashed; border-radius: 10px; border-color: #226600;'></div>");
+                                    } else if ( array2Draw[i][1] == 32 ) {
+                                        $("body").append(
+                                            "<div class='dropConainer' style='position: absolute; width: "+(larguraCompasso+1-60)+"px; height: 120px; top: "+top+"px; left: 90px; background-color:rgba(204, 221, 255, 0.5); border-radius: 10px;'></div>");
+                                    }
+
+                                    largAnterior = larguraCompasso;
+
+                                } else {
+
+                                    var larguraCompasso = (array2Draw[i][0]*50)+50;
+
+                                    var posCanvas = $("#composer").offset();
+                                    var top = p0Y+20+posCanvas.top;
+                                    
+                                    var left = posCanvas.left+largAnterior;
+                                    
+                                    console.log("console.log(array2Draw[i][1]) => "+array2Draw[i][1]);
+                                    if ( array2Draw[i][1] < 32 ) {
+                                        $("body").append(
+                                            "<div id='dropContainer_"+i+"' class='dropConainer dropContainerValid' style='position: absolute; width: "+(larguraCompasso+1)+"px; height: 120px; top: "+top+"px; left: "+left+"px; background-color:rgba(153, 255, 102, 0.5); border-style: dashed; border-radius: 10px; border-color: #226600;'></div>");
+                                    } else if ( array2Draw[i][1] == 32 ) {
+                                        $("body").append(
+                                            "<div class='dropConainer' style='position: absolute; width: "+(larguraCompasso+1)+"px; height: 120px; top: "+top+"px; left: "+left+"px; background-color:rgba(204, 221, 255, 0.5); border-radius: 10px;'></div>");
+                                    }
+
+                                    largAnterior = largAnterior+larguraCompasso;
+
+                                }
+
+                            }
+
+                            var larguraCompasso = 200;
+
+                             var posCanvas = $("#composer").offset();
+                             var top = p0Y+20+posCanvas.top;
+                                    
+                             var left = posCanvas.left+largAnterior;
+                                    
+                             $("body").append(
+                                "<div id='dropContainer_new' class='dropConainer dropContainerValid' style='position: absolute; width: "+(larguraCompasso+1)+"px; height: 120px; top: "+top+"px; left: "+left+"px; background-color:rgba(153, 255, 102, 0.5); border-style: dashed; border-radius: 10px; border-color: #226600;'></div>");
+
+                            largAnterior = largAnterior+larguraCompasso;
+
+                        }
+                        
+                        $(".dropContainerValid").mouseenter(function () {
+                            
+                            $(this).css("border-style", "solid");
+                            
+                            var top = p0Y+posCanvas.top+15;
+                            
+                            var pos = $(this).offset();
+                            var posX = pos.left;
+                            var posY = pos.top;
+                            
+                            var width = $(this).width();
+                            
+                            posX = posX+width-20;
+                            
+                            var parentId = $(this).attr('id');
+                            parentId = parentId.substring(parentId.indexOf("_")+1,parentId.length);
+                            
+                            $("body").append(
+                                "<div compasso='"+parentId+"' note='13' pos='last' class='note2Drop' style='position: absolute; width: 20px; height: 10px; top: "+(top+0)+"px; left: "+posX+"px; background-color:#ccffff; border-style: dashed; border-radius: 5px; border-width: 1px; border-color: #009999;'></div>");
+                            $("body").append(
+                                "<div compasso='"+parentId+"' note='12' pos='last' class='note2Drop' style='position: absolute; width: 20px; height: 10px; top: "+(top+10)+"px; left: "+posX+"px; background-color:#ccf2ff; border-style: dashed; border-radius: 5px; border-color: #007399; border-width: 1px;'></div>");
+                            $("body").append(
+                                "<div compasso='"+parentId+"' note='11' pos='last' class='note2Drop' style='position: absolute; width: 20px; height: 10px; top: "+(top+20)+"px; left: "+posX+"px; background-color:#cce6ff; border-style: dashed; border-radius: 5px; border-color: #004f99; border-width: 1px;'></div>");
+                            $("body").append(
+                                "<div compasso='"+parentId+"' note='10' pos='last' class='note2Drop' style='position: absolute; width: 20px; height: 10px; top: "+(top+30)+"px; left: "+posX+"px; background-color:#ccddff; border-style: dashed; border-radius: 5px; border-color: #003399; border-width: 1px;'></div>");
+                            $("body").append(
+                                "<div compasso='"+parentId+"' note='9' pos='last' class='note2Drop' style='position: absolute; width: 20px; height: 10px; top: "+(top+40)+"px; left: "+posX+"px; background-color:#ccccff; border-style: dashed; border-radius: 5px; border-color: #000099; border-width: 1px;'></div>");
+                            $("body").append(
+                                "<div compasso='"+parentId+"' note='8' pos='last'' class='note2Drop' style='position: absolute; width: 20px; height: 10px; top: "+(top+50)+"px; left: "+posX+"px; background-color:#eeccff; border-style: dashed; border-radius: 5px; border-color: #660099; border-width: 1px;'></div>");
+                            $("body").append(
+                                "<div compasso='"+parentId+"' note='7' pos='last' class='note2Drop' style='position: absolute; width: 20px; height: 10px; top: "+(top+60)+"px; left: "+posX+"px; background-color:#ffccff; border-style: dashed; border-radius: 5px; border-color: #990099; border-width: 1px;'></div>");
+                            $("body").append(
+                                "<div compasso='"+parentId+"' note='6' pos='last' class='note2Drop' style='position: absolute; width: 20px; height: 10px; top: "+(top+70)+"px; left: "+posX+"px; background-color:#ffcccc; border-style: dashed; border-radius: 5px; border-color: #b30000; border-width: 1px;'></div>");
+                            $("body").append(
+                                "<div compasso='"+parentId+"' note='5' pos='last' class='note2Drop' style='position: absolute; width: 20px; height: 10px; top: "+(top+80)+"px; left: "+posX+"px; background-color:#ffddcc; border-style: dashed; border-radius: 5px; border-color: #993300; border-width: 1px;'></div>");
+                            $("body").append(
+                                "<div compasso='"+parentId+"' note='4' pos='last' class='note2Drop' style='position: absolute; width: 20px; height: 10px; top: "+(top+90)+"px; left: "+posX+"px; background-color:#ffeecc; border-style: dashed; border-radius: 5px; border-color: #996600; border-width: 1px;'></div>");
+                            $("body").append(
+                                "<div compasso='"+parentId+"' note='3' pos='last' class='note2Drop' style='position: absolute; width: 20px; height: 10px; top: "+(top+100)+"px; left: "+posX+"px; background-color:#ffffcc; border-style: dashed; border-radius: 5px; border-color: #999900; border-width: 1px;'></div>");
+                            $("body").append(
+                                "<div compasso='"+parentId+"' note='2' pos='last' class='note2Drop' style='position: absolute; width: 20px; height: 10px; top: "+(top+110)+"px; left: "+posX+"px; background-color:#eeffcc; border-style: dashed; border-radius: 5px; border-color: #669900; border-width: 1px;'></div>");
+                            $("body").append(
+                                "<div compasso='"+parentId+"' note='1' pos='last' class='note2Drop' style='position: absolute; width: 20px; height: 10px; top: "+(top+120)+"px; left: "+posX+"px; background-color:#ddffcc; border-style: dashed; border-radius: 5px; border-color: #339900; border-width: 1px;'></div>");
+                            
+                            $(".note2Drop").mouseenter(function () {
+                                $(".note2Drop").css("border-style", "dashed");
+                                $(".note2Drop").css("border-width", "1px");
+                                $(this).css("border-style", "solid");
+                                $(this).css("border-width", "3px");
+                            });
+                            
+                            $(".note2Drop").mouseleave(function () {
+                                $(this).css("border-style", "dashed");
+                                $(this).css("border-width", "1px");
+                            });
+                            
+                            $(".note2Drop").droppable({
+                                accept: ".note2Drag",
+                                drop: function( event, ui ) {
+                                    
+                                    var nCompasso = $(this).attr("compasso");
+                                    var nNote = $(this).attr("note");
+                                    var nPos = $(this).attr("pos");
+                                    
+                                    console.log("nCompasso => "+nCompasso+", nNote => "+nNote+", nPos => "+nPos);
+                                    
+                                    console.log("partitura => ");
+                                    console.log(partitura);
+                                    
+                                    if ( nCompasso == "new" ) {
+                                        
+                                        var newCompasso = [];
+                                        newCompasso[0] = {"notes": [nNote], "type": "seminima", "subtype": "up"};
+
+                                        partitura.drums.push(newCompasso);
+
+                                        var timeInit = (new Date()).getTime();
+                                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                                        array2Draw = preProcessPartitura(partitura);
+                                        ctx = drawBaseCanvas();
+                                        drawPartitura(ctx, partitura);
+                                        $("#showJSON").html(JSON.stringify(partitura));
+                                        var timeEnd = (new Date()).getTime();
+                                        console.log("Time to reprocess => "+(timeEnd-timeInit)+"ms");
+                                        
+                                    } else {
+                                        
+                                        nCompasso = parseFloat(nCompasso);
+                                        
+                                        var lastNotePos =partitura.drums[nCompasso].length-1;
+                                        var lastNote = partitura.drums[nCompasso][lastNotePos];
+                                        console.log("lastNote => ");
+                                        console.log(lastNote);
+                                        
+                                        var newPos;
+                                        if ( lastNote.type == "seminima" || lastNote.type == "hihat-closed-seminima" ) {
+                                            newPos = lastNotePos+8;
+                                        }
+                                        
+                                        partitura.drums[nCompasso][newPos] = {"notes": [nNote], "type": "seminima", "subtype": "up"};
+                                        
+                                        var timeInit = (new Date()).getTime();
+                                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                                        array2Draw = preProcessPartitura(partitura);
+                                        ctx = drawBaseCanvas();
+                                        drawPartitura(ctx, partitura);
+                                        $("#showJSON").html(JSON.stringify(partitura));
+                                        var timeEnd = (new Date()).getTime();
+                                        console.log("Time to reprocess => "+(timeEnd-timeInit)+"ms");
+                                        
+                                    }
+
+                                }
+                            });
+                            
+                        });
+                        
+                        $(".dropContainerValid").mouseleave(function () {
+                            $(this).css("border-style", "dashed");
+                            //$(".note2Drop").remove();
+                        });
+                            
+                        /////////////////////////////////////////////////////////
+                    },
+                    stop: function () {
+                        $(".dropConainer").remove();
+                        $(".note2Drop").remove();
+                    }
+                });
+                
             });
             
+            function dragNote(note) {
+                
+                var posX;
+                var posY;
+                
+                if ( note == "semibreve" ) {
+                    
+                    var btPos = $("#buttonAddSemibreve").position();
+                    var composerPosition = $("#composer").offset();
+                    
+                    posX = btPos.left+composerPosition.left+13;
+                    posY = btPos.top+composerPosition.top+23;
+                    
+                } else if ( note == "minima" ) {
+                    
+                    var btPos = $("#buttonAddMinima").position();
+                    var composerPosition = $("#composer").offset();
+                    
+                    posX = btPos.left+composerPosition.left+13;
+                    posY = btPos.top+composerPosition.top+23;
+                    
+                } else if ( note == "seminima" ) {
+                    
+                    var btPos = $("#buttonAddSeminima").position();
+                    var composerPosition = $("#composer").offset();
+                    
+                    posX = btPos.left+composerPosition.left+13;
+                    posY = btPos.top+composerPosition.top+23;
+                    
+                } else if ( note == "colcheia" ) {
+                    
+                    var btPos = $("#buttonAddColcheia").position();
+                    var composerPosition = $("#composer").offset();
+                    
+                    posX = btPos.left+composerPosition.left+13;
+                    posY = btPos.top+composerPosition.top+23;
+                    
+                } else if ( note == "semicolcheia" ) {
+                    
+                    var btPos = $("#buttonAddSemicolcheia").position();
+                    var composerPosition = $("#composer").offset();
+                    
+                    posX = btPos.left+composerPosition.left+13;
+                    posY = btPos.top+composerPosition.top+23;
+                    
+                } else if ( note == "fusa" ) {
+                    
+                    var btPos = $("#buttonAddFusa").position();
+                    var composerPosition = $("#composer").offset();
+                    
+                    posX = btPos.left+composerPosition.left+13;
+                    posY = btPos.top+composerPosition.top+23;
+                    
+                } else if ( note == "closedhihat" ) {
+                    
+                    var btPos = $("#buttonAddClosedhihat").position();
+                    var composerPosition = $("#composer").offset();
+                    
+                    posX = btPos.left+composerPosition.left+13;
+                    posY = btPos.top+composerPosition.top+23;
+                    
+                }
+
+            }
+
         </script>
     </head>
     <body>
-        <button type="button" onclick="initBeat()">Start</button>
-        <button type="button" onclick="stopBeat()">Pause/Stop</button>
-        |
-        <button type="button" onclick="increase()">+</button>
-        <input id="bpmInput" type="text" onchange="change()" value="60" />
-        <button type="button" onclick="decrease()">-</button>
-        bpm
+        <div class="col-md-10" style="padding-top: 20px;">
+            <div class="col-md-10">
+                <button type="button" class="btn btn-primary" onclick="initBeat()">Start</button>
+                <button type="button" class="btn btn-default" onclick="stopBeat()">Pause/Stop</button>
+                |
+                Tempo
+                <button type="button" class="btn btn-default" onclick="increase()">+</button>
+                <input id="bpmInput" type="text" onchange="change()" value="60" />
+                <button type="button" class="btn btn-default" onclick="decrease()">-</button>
+                bpm
+                <input id="timeSignatureInput" type="text" onchange="change()" value="4" style="width: 15;"/> /4
+            </div>
+            <br><br>
+            <div class="col-md-10">
+                <form>
+                    <div class="form-group">
+                        <label class="col-md-4 col-form-label">Ritmo pré-definido:</label>
+                        <div id="predefinedRithmComboboxDiv" class="col-md-8">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <br><br><br>
+            <div class="col-md-10">
+                <canvas id="composer" width="800" height="250"></canvas>
+            </div>
+            <br><br>
+            <div class="col-md-10">
+                <div id="showJSON"></div>
+            </div>
+            <div id="noteButtonsConainer" style="position: absolute; left: 100px; top: 150px; padding-top: 20px; padding-left: 20px; background-color: #ccd0ff; border-style: solid; border-width: 2px; border-radius: 5px;">
+                <div style="width: 50px; height: 65px; display: inline-block;" >
+                    <img id="buttonAddSemibreve" class="note2Drag" src="pictures/semibreve.png" onclick="dragNote('semibreve')" />
+                </div>
+                <div style="width: 50px; height: 65px; display: inline-block;" >
+                    <img id="buttonAddMinima" class="note2Drag" src="pictures/minima.png" onclick="dragNote('minima')" />
+                </div>
+                <div style="width: 50px; height: 65px; display: inline-block;" >
+                    <img id="buttonAddSeminima" class="note2Drag" src="pictures/seminima.png" onclick="dragNote('seminima')" />
+                </div>
+                <div style="width: 50px; height: 65px; display: inline-block;" >
+                    <img id="buttonAddColcheia" class="note2Drag" src="pictures/colcheia.png" onclick="dragNote('colcheia')" />
+                </div>
+                <div style="width: 50px; height: 65px; display: inline-block;" >
+                    <img id="buttonAddSemicolcheia" class="note2Drag" src="pictures/semicolcheia.png" onclick="dragNote('semicolcheia')" />
+                </div>
+                <div style="width: 50px; height: 65px; display: inline-block;" >
+                    <img id="buttonAddFusa" class="note2Drag" src="pictures/fusa.png" onclick="dragNote('fusa')" />
+                </div>
+                <div style="width: 50px; height: 65px; display: inline-block;" >
+                    <img id="buttonAddClosedhihat" class="note2Drag" src="pictures/closedhihat.png" onclick="dragNote('closedhihat')" />
+                </div>
+            </div>
+        </div>
     </body>
 </html>
